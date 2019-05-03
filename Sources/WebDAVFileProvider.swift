@@ -568,6 +568,7 @@ public final class WebDavFileObject: FileObject {
         let path = relativePath.hasPrefix("/") ? relativePath : ("/" + relativePath)
         super.init(url: href, name: name, path: path)
         self.size = Int64(davResponse.prop["getcontentlength"] ?? "-1") ?? NSURLSessionTransferSizeUnknown
+        self.id = Int64(davResponse.prop["documentid"] ?? "-1") ?? NSURLSessionTransferSizeUnknown
         self.creationDate = davResponse.prop["creationdate"].flatMap { Date(rfcString: $0) }
         self.modifiedDate = davResponse.prop["getlastmodified"].flatMap { Date(rfcString: $0) }
         self.contentType = davResponse.prop["getcontenttype"].flatMap(ContentMIMEType.init(rawValue:)) ?? .stream
@@ -575,6 +576,17 @@ public final class WebDavFileObject: FileObject {
         self.isReadOnly = (Int(davResponse.prop["isreadonly"] ?? "0") ?? 0) > 0
         self.type = (self.contentType == .directory) ? .directory : .regular
         self.entryTag = davResponse.prop["getetag"]
+    }
+ 
+     /// The document identifier is a value assigned by the server to a file or directory.
+    /// This value is used to identify the document regardless of where it is moved on a volume.
+    public internal(set) var id: Int64 {
+        get {
+            return allValues[.documentIdentifierKey] as? Int64 ?? -1
+        }
+        set {
+            allValues[.documentIdentifierKey] = newValue
+        }
     }
     
     /// MIME type of the file.
@@ -599,6 +611,8 @@ public final class WebDavFileObject: FileObject {
     
     internal class func resourceKeyToDAVProp(_ key: URLResourceKey) -> String? {
         switch key {
+        case URLResourceKey.documentIdentifierKey:
+            return "documentid"
         case URLResourceKey.fileSizeKey:
             return "getcontentlength"
         case URLResourceKey.creationDateKey:
