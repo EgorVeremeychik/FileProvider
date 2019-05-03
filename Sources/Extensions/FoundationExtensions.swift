@@ -396,7 +396,7 @@ internal extension URLRequest {
 }
 
 internal extension CharacterSet {
-    static let filePathAllowed = CharacterSet.urlPathAllowed.subtracting(CharacterSet(charactersIn: ":"))
+    static let filePathAllowed = CharacterSet.urlPathAllowed.subtracting(CharacterSet(charactersIn: "+:"))
 }
 
 extension Data {
